@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Search, Download, ArrowUpDown, Shield, Clock, AlertTriangle, Users, Map, FileText } from "lucide-react";
+import { Search, Download, ArrowUpDown, Shield, Clock, AlertTriangle, Users, Map, FileText, ChevronDown, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/sam/PageHeader";
 import { DealRow } from "@/components/sam/DealRow";
@@ -8,6 +9,9 @@ import { RiskChipSet } from "@/components/sam/RiskChip";
 import { ForecastBadge } from "@/components/sam/StatusDot";
 import { mockDeals, type Deal } from "@/data/mock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function AttentionQueue() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(mockDeals[0]);
@@ -16,32 +20,140 @@ export default function AttentionQueue() {
     d.deal_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     d.account_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const riskFilterOptions = ['Commit at Risk', 'Stage Stuck', 'No Next Step', 'Close Date Moved', 'Single Threaded'];
+  const [selectedRisks, setSelectedRisks] = useState<string[]>(riskFilterOptions);
+  const [forecastFilter, setForecastFilter] = useState<string>('all');
+  const [stageFilter, setStageFilter] = useState<string>('all');
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Attention Queue" subtitle="Ranked deals needing action">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search deals..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 w-48 text-xs bg-secondary border-border"
-          />
-        </div>
-        <Button variant="ghost" size="sm" className="text-xs">
-          <ArrowUpDown className="h-3.5 w-3.5 mr-1" />Sort
-        </Button>
-        <Button variant="ghost" size="sm" className="text-xs">
-          <Download className="h-3.5 w-3.5 mr-1" />Export
-        </Button>
-      </PageHeader>
+      <PageHeader title="Attention Queue" subtitle="Ranked deals needing action" />
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 px-6 py-2 border-b border-border">
-        {['Commit at Risk', 'Stage Stuck', 'No Next Step', 'Close Date Moved', 'Single Threaded'].map((f) => (
-          <Button key={f} variant="secondary" size="sm" className="text-xs h-7 rounded-full">{f}</Button>
-        ))}
+      <div className="grid grid-cols-5 items-center gap-3 px-6 py-2 border-b border-border bg-card/50">
+        <div className="col-span-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search deals..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 w-full text-xs bg-secondary border-border"
+            />
+          </div>
+        </div>
+        <div className="col-span-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="w-full h-8 text-xs rounded-md border border-input bg-transparent px-3 inline-flex items-center justify-between ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary/10 active:bg-primary/15 data-[state=open]:bg-primary/15">
+                <span className="truncate">
+                  Risk Type: {selectedRisks.length === riskFilterOptions.length ? 'All' : `${selectedRisks.length} selected`}
+                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="p-1 w-56">
+              <div
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-primary/10 focus:bg-primary/60 focus:text-primary-foreground"
+                onClick={() =>
+                  setSelectedRisks(selectedRisks.length === riskFilterOptions.length ? [] : riskFilterOptions)
+                }
+                role="button"
+                tabIndex={0}
+              >
+                <Checkbox
+                  checked={selectedRisks.length === riskFilterOptions.length}
+                  onCheckedChange={(checked) => setSelectedRisks(checked ? riskFilterOptions : [])}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mr-2"
+                />
+                <span className="truncate">All</span>
+              </div>
+              {riskFilterOptions.map((label) => (
+                <div
+                  key={label}
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-primary/10 focus:bg-primary/60 focus:text-primary-foreground"
+                  onClick={() =>
+                    setSelectedRisks((prev) => (prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]))
+                  }
+                  role="button"
+                  tabIndex={0}
+                >
+                  <Checkbox
+                    checked={selectedRisks.includes(label)}
+                    onCheckedChange={(checked) =>
+                      setSelectedRisks((prev) => (checked ? [...prev, label] : prev.filter((x) => x !== label)))
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                    className="mr-2"
+                  />
+                  <span className="truncate">{label}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="col-span-1">
+          <Select value={forecastFilter} onValueChange={setForecastFilter}>
+            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+              <SelectValue placeholder="Forecast category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="COMMIT">Commit</SelectItem>
+              <SelectItem value="BEST_CASE">Best Case</SelectItem>
+              <SelectItem value="PIPELINE">Pipeline</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="col-span-1">
+          <Select value={stageFilter} onValueChange={setStageFilter}>
+            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+              <SelectValue placeholder="Stage filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stages</SelectItem>
+              <SelectItem value="Discovery">Discovery</SelectItem>
+              <SelectItem value="Validation">Validation</SelectItem>
+              <SelectItem value="Proposal">Proposal</SelectItem>
+              <SelectItem value="Negotiation">Negotiation</SelectItem>
+              <SelectItem value="Close">Close</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="col-span-1">
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+              aria-label="Reset"
+              onClick={() => {
+                setSearchQuery("");
+                setForecastFilter("all");
+                setStageFilter("all");
+                setSelectedRisks(riskFilterOptions);
+              }}
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground" aria-label="Sort">
+                  <ArrowUpDown className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Sort</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground" aria-label="Export">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Export</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
       </div>
 
       {/* Split view */}
@@ -76,12 +188,12 @@ export default function AttentionQueue() {
               </div>
 
               <Tabs defaultValue="summary" className="w-full">
-                <TabsList className="bg-muted w-full justify-start gap-0 h-9 p-0.5">
-                  <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-card">Summary</TabsTrigger>
-                  <TabsTrigger value="evidence" className="text-xs data-[state=active]:bg-card">Evidence</TabsTrigger>
-                  <TabsTrigger value="stakeholders" className="text-xs data-[state=active]:bg-card">Stakeholders</TabsTrigger>
-                  <TabsTrigger value="map" className="text-xs data-[state=active]:bg-card">MAP</TabsTrigger>
-                  <TabsTrigger value="history" className="text-xs data-[state=active]:bg-card">History</TabsTrigger>
+              <TabsList className="bg-muted w-full justify-between gap-0 h-9 p-0.5">
+                  <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-card flex-1">Summary</TabsTrigger>
+                  <TabsTrigger value="evidence" className="text-xs data-[state=active]:bg-card flex-1">Evidence</TabsTrigger>
+                  <TabsTrigger value="stakeholders" className="text-xs data-[state=active]:bg-card flex-1">Stakeholders</TabsTrigger>
+                  <TabsTrigger value="map" className="text-xs data-[state=active]:bg-card flex-1">MAP</TabsTrigger>
+                  <TabsTrigger value="history" className="text-xs data-[state=active]:bg-card flex-1">History</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="summary" className="mt-4 space-y-4">
@@ -104,7 +216,7 @@ export default function AttentionQueue() {
                   </div>
 
                   {/* Recommended action */}
-                  <div className="rounded-md bg-accent p-3 space-y-2">
+                  <div className="space-y-2">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recommended Action</h3>
                     <p className="text-sm text-foreground">
                       {selectedDeal.risk_level === 'RED'
@@ -167,7 +279,7 @@ export default function AttentionQueue() {
                         <span className="text-xs text-muted-foreground">{e.date}</span>
                       </div>
                       <p className="text-xs text-muted-foreground italic">{e.excerpt}</p>
-                      <Button variant="ghost" size="sm" className="text-xs h-6 text-primary p-0">Open recording →</Button>
+                      <Button variant="ghost" size="sm" className="text-xs h-6 text-primary p-0 hover:bg-transparent hover:text-[#FF8E1C]">Open recording →</Button>
                     </div>
                   ))}
                 </TabsContent>

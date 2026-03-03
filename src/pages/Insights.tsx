@@ -59,15 +59,15 @@ export default function Insights() {
                   <AreaChart data={accuracyData}>
                     <defs>
                       <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(238 80% 64%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(238 80% 64%)" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} domain={[50, 100]} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(222 40% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '6px', fontSize: '12px', color: 'hsl(210 20% 92%)' }} />
-                    <Area type="monotone" dataKey="accuracy" stroke="hsl(238 80% 64%)" fill="url(#colorAccuracy)" strokeWidth={2} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} domain={[50, 100]} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                    <Area type="monotone" dataKey="accuracy" stroke="hsl(var(--primary))" fill="url(#colorAccuracy)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -76,11 +76,11 @@ export default function Insights() {
                 <h3 className="text-sm font-semibold text-foreground mb-3">Commit Slip Rate</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={slipData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(222 40% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '6px', fontSize: '12px', color: 'hsl(210 20% 92%)' }} />
-                    <Line type="monotone" dataKey="rate" stroke="hsl(0 72% 51%)" strokeWidth={2} dot={{ fill: 'hsl(0 72% 51%)', r: 3 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                    <Line type="monotone" dataKey="rate" stroke="hsl(var(--status-red))" strokeWidth={2} dot={{ fill: 'hsl(var(--status-red))', r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -91,11 +91,11 @@ export default function Insights() {
               <h3 className="text-sm font-semibold text-foreground mb-3">Close Date Movement Distribution</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={closeDateMovement}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: 'hsl(215 15% 50%)' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: 'hsl(222 40% 9%)', border: '1px solid hsl(222 20% 16%)', borderRadius: '6px', fontSize: '12px', color: 'hsl(210 20% 92%)' }} />
-                  <Bar dataKey="count" fill="hsl(238 80% 64%)" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -117,7 +117,7 @@ export default function Insights() {
                 </thead>
                 <tbody>
                   {mockAEReps.map((rep) => (
-                    <tr key={rep.user_id} className="border-b border-border last:border-0 hover:bg-accent/30">
+                    <tr key={rep.user_id} className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15">
                       <td className="px-4 py-2.5 font-medium text-foreground">{rep.name}</td>
                       <td className="text-right px-3 py-2.5">{formatCurrency(rep.commit_amount)}</td>
                       <td className="text-right px-3 py-2.5">{65 + Math.floor(Math.random() * 20)}%</td>

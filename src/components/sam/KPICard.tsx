@@ -17,7 +17,7 @@ export function KPICard({ label, value, trend, trendLabel, trendPositive }: KPIC
       : 'text-status-red';
 
   return (
-    <div className="flex flex-col justify-between rounded-lg border border-border bg-card p-4 min-h-[96px]">
+    <div className="flex flex-col justify-between rounded-lg border border-border bg-card p-4 min-h-[96px] transition-colors transition-transform duration-150 hover:shadow-sm hover:-translate-y-0.5">
       <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
       {trend && (

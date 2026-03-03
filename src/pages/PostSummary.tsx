@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Edit, Send, Download, CheckCircle2, Circle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/sam/PageHeader";
@@ -7,14 +8,29 @@ import { mockDecisions, mockTasks } from "@/data/mock";
 
 export default function PostSummary() {
   const navigate = useNavigate();
+  const [taskFilters, setTaskFilters] = useState<{ overdue: boolean; dueSoon: boolean }>({ overdue: false, dueSoon: false });
+  const toggleFilter = (key: 'overdue' | 'dueSoon') => setTaskFilters((p) => ({ ...p, [key]: !p[key] }));
+  const isDueSoon = (due: string | null, overdue: boolean) => {
+    if (!due || overdue) return false;
+    const d = new Date(due);
+    const now = new Date();
+    const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    return diff >= 0 && diff <= 7;
+  };
+  const taskFilterMatch = (t: { is_overdue: boolean; due_date: string | null }) => {
+    if (!taskFilters.overdue && !taskFilters.dueSoon) return true;
+    const matchOverdue = taskFilters.overdue && t.is_overdue;
+    const matchDueSoon = taskFilters.dueSoon && isDueSoon(t.due_date, t.is_overdue);
+    return matchOverdue || matchDueSoon;
+  };
 
   return (
     <div className="flex flex-col h-full">
       <PageHeader title="1:1 Summary — Sarah Chen — Mar 3, 2026" subtitle="Duration: 42 min · Recorded: Yes">
-        <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate('/')}>
+        <Button variant="ghost" size="sm" className="text-xs hover:bg-transparent hover:text-[#605BFF] transition-colors" onClick={() => navigate('/')}>
           <ArrowLeft className="h-3.5 w-3.5 mr-1" />Back
         </Button>
-        <Button variant="secondary" size="sm" className="text-xs">
+        <Button variant="secondary" size="sm" className="text-xs hover:bg-primary/10 active:bg-primary/15 transition-colors">
           <Edit className="h-3.5 w-3.5 mr-1" />Edit
         </Button>
         <Button size="sm" className="text-xs">
@@ -41,7 +57,7 @@ export default function PostSummary() {
                 </thead>
                 <tbody>
                   {mockDecisions.map((d, i) => (
-                    <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/30">
+                    <tr key={i} className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15">
                       <td className="px-4 py-2.5 font-medium text-foreground cursor-pointer hover:text-primary" onClick={() => navigate('/queue')}>
                         {d.deal_name}
                       </td>
@@ -105,13 +121,42 @@ export default function PostSummary() {
         {/* Right rail: Tasks */}
         <div className="w-[320px] border-l border-border overflow-y-auto p-4 shrink-0">
           <h2 className="text-sm font-semibold text-foreground mb-3">Tasks</h2>
+          <div className="flex gap-2 mb-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`text-xs flex-1 transition-colors ${
+                taskFilters.overdue
+                  ? 'rounded-full bg-[#605BFF] text-white hover:bg-[#605BFF]/90 active:bg-[#605BFF]/80'
+                  : 'rounded-full bg-muted text-muted-foreground hover:bg-[#605BFF]/10 active:bg-[#605BFF]/15'
+              }`}
+              onClick={() => toggleFilter('overdue')}
+            >
+              Overdue
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`text-xs flex-1 transition-colors ${
+                taskFilters.dueSoon
+                  ? 'rounded-full bg-[#605BFF] text-white hover:bg-[#605BFF]/90 active:bg-[#605BFF]/80'
+                  : 'rounded-full bg-muted text-muted-foreground hover:bg-[#605BFF]/10 active:bg-[#605BFF]/15'
+              }`}
+              onClick={() => toggleFilter('dueSoon')}
+            >
+              Due Soon
+            </Button>
+          </div>
 
           {/* AE Tasks */}
           <div className="mb-4">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">AE Tasks</h3>
             <div className="space-y-1.5">
-              {mockTasks.filter(t => ['Sarah Chen', 'Marcus Johnson'].includes(t.owner_name)).map((task) => (
-                <div key={task.task_id} className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors">
+              {mockTasks
+                .filter(t => ['Sarah Chen', 'Marcus Johnson'].includes(t.owner_name))
+                .filter(taskFilterMatch)
+                .map((task) => (
+                <div key={task.task_id} className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-primary/10 active:bg-primary/15 cursor-pointer transition-colors">
                   {task.status === 'DONE'
                     ? <CheckCircle2 className="h-3.5 w-3.5 text-status-green shrink-0 mt-0.5" />
                     : <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
@@ -132,8 +177,11 @@ export default function PostSummary() {
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Manager Tasks</h3>
             <div className="space-y-1.5">
-              {mockTasks.filter(t => ['Alex Rivera', 'Priya Patel'].includes(t.owner_name)).map((task) => (
-                <div key={task.task_id} className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors">
+              {mockTasks
+                .filter(t => ['Alex Rivera', 'Priya Patel'].includes(t.owner_name))
+                .filter(taskFilterMatch)
+                .map((task) => (
+                <div key={task.task_id} className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-primary/10 active:bg-primary/15 cursor-pointer transition-colors">
                   {task.status === 'DONE'
                     ? <CheckCircle2 className="h-3.5 w-3.5 text-status-green shrink-0 mt-0.5" />
                     : <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
@@ -150,10 +198,7 @@ export default function PostSummary() {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-border flex gap-2">
-            <Button variant="secondary" size="sm" className="text-xs flex-1">Overdue</Button>
-            <Button variant="secondary" size="sm" className="text-xs flex-1">Due Soon</Button>
-          </div>
+          
         </div>
       </div>
     </div>

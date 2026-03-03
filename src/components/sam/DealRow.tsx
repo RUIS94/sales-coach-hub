@@ -16,7 +16,7 @@ export function DealRow({ deal, selected, onClick, onPin, compact }: DealRowProp
     <div
       onClick={onClick}
       className={`group flex flex-col gap-1 border-b border-border px-4 py-3 cursor-pointer transition-colors
-        ${selected ? 'bg-accent border-l-2 border-l-primary' : 'hover:bg-accent/50'}
+        ${selected ? 'bg-primary/15 border-l-2 border-l-primary' : 'hover:bg-primary/10'}
         ${compact ? 'py-2' : ''}`}
     >
       <div className="flex items-center justify-between">
@@ -38,7 +38,7 @@ export function DealRow({ deal, selected, onClick, onPin, compact }: DealRowProp
             variant="ghost"
             size="sm"
             onClick={(e) => { e.stopPropagation(); onPin(); }}
-            className="opacity-0 group-hover:opacity-100 h-6 px-2 text-xs text-muted-foreground hover:text-primary"
+            className="opacity-0 group-hover:opacity-100 h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C]"
           >
             <Pin className="h-3 w-3 mr-1" />
             Add to 1:1

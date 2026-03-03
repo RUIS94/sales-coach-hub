@@ -44,15 +44,15 @@ export default function ManagerView() {
       </div>
 
       {/* Attention Queue + AE Table */}
-      <div className="grid grid-cols-12 gap-4 px-6 pb-4">
+      <div className="grid grid-cols-2 gap-4 px-6 pb-4">
         {/* Attention Queue Preview */}
-        <div className="col-span-7 rounded-lg border border-border bg-card">
+        <div className="col-span-1 rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div>
               <h2 className="text-sm font-semibold text-foreground">Attention Queue</h2>
               <p className="text-xs text-muted-foreground">Top deals needing action this week</p>
             </div>
-            <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => navigate('/queue')}>
+            <Button variant="ghost" size="sm" className="text-xs text-primary hover:bg-transparent hover:text-[#FF8E1C]" onClick={() => navigate('/queue')}>
               View full queue →
             </Button>
           </div>
@@ -70,7 +70,7 @@ export default function ManagerView() {
         </div>
 
         {/* AE Health Table */}
-        <div className="col-span-5 rounded-lg border border-border bg-card">
+        <div className="col-span-1 rounded-lg border border-border bg-card">
           <div className="px-4 py-3 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground">Team by AE</h2>
           </div>
@@ -89,7 +89,7 @@ export default function ManagerView() {
                 {mockAEReps.map((rep) => (
                   <tr
                     key={rep.user_id}
-                    className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors"
+                    className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15 cursor-pointer transition-colors"
                     onClick={() => navigate('/prep')}
                   >
                     <td className="px-4 py-2.5 font-medium text-foreground">{rep.name}</td>
@@ -123,7 +123,7 @@ export default function ManagerView() {
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Stage Conversion Funnel</h2>
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">View details</Button>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C]">View details</Button>
           </div>
           <div className="space-y-2">
             {[
@@ -148,7 +148,7 @@ export default function ManagerView() {
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Dwell Time Heatmap</h2>
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">View details</Button>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C]">View details</Button>
           </div>
           <div className="grid grid-cols-5 gap-1">
             {['Discovery', 'Validation', 'Proposal', 'Negotiation', 'Close'].map((stage) => (
@@ -162,7 +162,7 @@ export default function ManagerView() {
                       key={ae}
                       className="h-8 rounded-sm mb-0.5 flex items-center justify-center text-[10px] font-medium"
                       style={{
-                        backgroundColor: `hsl(238 80% 64% / ${opacity * 0.6})`,
+                        backgroundColor: `hsl(var(--primary) / ${opacity * 0.6})`,
                         color: opacity > 0.4 ? 'hsl(0 0% 100%)' : 'hsl(215 15% 50%)',
                       }}
                     >
