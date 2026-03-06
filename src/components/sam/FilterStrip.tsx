@@ -6,12 +6,13 @@ interface FilterStripProps {
   timeRange: string;
   onTimeRangeChange: (v: string) => void;
   children?: React.ReactNode;
+  showFrequency?: boolean;
 }
 
-export function FilterStrip({ timeRange, onTimeRangeChange, children }: FilterStripProps) {
+export function FilterStrip({ timeRange, onTimeRangeChange, children, showFrequency = true }: FilterStripProps) {
   const [frequency, setFrequency] = useState<"weekly" | "fortnightly">("weekly");
   return (
-    <div className="grid grid-cols-[auto,1fr,1fr,auto] items-center gap-6 px-6 py-2 border-b border-border bg-card/50">
+    <div className={`${showFrequency ? 'grid grid-cols-[auto,1fr,1fr,auto]' : 'grid grid-cols-[auto,1fr,1fr]'} items-center gap-6 px-6 py-2 border-b border-border bg-card/50`}>
       {/* Container 1: Time range (left aligned) */}
       <div className="flex-shrink-0">
         <div className="inline-flex w-fit rounded-md border border-border overflow-hidden">
@@ -65,29 +66,31 @@ export function FilterStrip({ timeRange, onTimeRangeChange, children }: FilterSt
         </Select>
       </div>
       {/* Container 4: Weekly vs Fortnightly (right aligned) */}
-      <div className="flex-shrink-0">
-        <div className="inline-flex w-fit rounded-md border border-border overflow-hidden">
-          {[
-            { key: 'weekly', label: 'Weekly' },
-            { key: 'fortnightly', label: 'Fortnightly' },
-          ].map((opt) => (
-            <Button
-              key={opt.key}
-              variant="ghost"
-              size="sm"
-              onClick={() => setFrequency(opt.key as "weekly" | "fortnightly")}
-              aria-pressed={frequency === opt.key}
-              className={`rounded-none text-xs h-8 px-3 ${
-                frequency === opt.key
-                  ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-primary/60 hover:text-primary-foreground active:bg-primary active:text-primary-foreground'
-              }`}
-            >
-              {opt.label}
-            </Button>
-          ))}
+      {showFrequency && (
+        <div className="flex-shrink-0">
+          <div className="inline-flex w-fit rounded-md border border-border overflow-hidden">
+            {[
+              { key: 'weekly', label: 'Weekly' },
+              { key: 'fortnightly', label: 'Fortnightly' },
+            ].map((opt) => (
+              <Button
+                key={opt.key}
+                variant="ghost"
+                size="sm"
+                onClick={() => setFrequency(opt.key as "weekly" | "fortnightly")}
+                aria-pressed={frequency === opt.key}
+                className={`rounded-none text-xs h-8 px-3 ${
+                  frequency === opt.key
+                    ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-primary/60 hover:text-primary-foreground active:bg-primary active:text-primary-foreground'
+                }`}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       {children}
     </div>
   );

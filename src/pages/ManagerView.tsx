@@ -11,40 +11,155 @@ import { mockDeals, mockAEReps, formatCurrency } from "@/data/mock";
 
 export default function ManagerView() {
   const [timeRange, setTimeRange] = useState("This month");
+  const [pinnedDealIds, setPinnedDealIds] = useState<string[]>([]);
   const navigate = useNavigate();
   const topDeals = mockDeals.slice(0, 6);
-  const commitTotal = mockDeals.filter(d => d.forecast_category === 'COMMIT').reduce((s, d) => s + d.amount, 0);
-  const bestCaseTotal = mockDeals.filter(d => d.forecast_category === 'BEST_CASE').reduce((s, d) => s + d.amount, 0);
-  const slippageCount = mockDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).length;
-  const overdueCount = 5;
+  const cfg =
+    timeRange === "This week"
+      ? { curMax: 7, prevMin: 8, prevMax: 14, unit: "week", staleCur: 7, stalePrevMin: 8, stalePrevMax: 14 }
+      : timeRange === "This quarter"
+      ? { curMax: 90, prevMin: 91, prevMax: 180, unit: "quarter", staleCur: 90, stalePrevMin: 91, stalePrevMax: 180 }
+      : { curMax: 30, prevMin: 31, prevMax: 60, unit: "month", staleCur: 30, stalePrevMin: 31, stalePrevMax: 60 };
+  const currentWindowDeals = mockDeals.filter(d => d.staleness_days <= cfg.staleCur);
+  const previousWindowDeals = mockDeals.filter(d => d.staleness_days >= cfg.stalePrevMin && d.staleness_days <= cfg.stalePrevMax);
+  const commitCurrent = currentWindowDeals.filter(d => d.forecast_category === 'COMMIT').reduce((s, d) => s + d.amount, 0);
+  const commitPrev = previousWindowDeals.filter(d => d.forecast_category === 'COMMIT').reduce((s, d) => s + d.amount, 0);
+  const commitCountCurrent = currentWindowDeals.filter(d => d.forecast_category === 'COMMIT').length;
+  const bestCaseCurrent = currentWindowDeals.filter(d => d.forecast_category === 'BEST_CASE').reduce((s, d) => s + d.amount, 0);
+  const bestCasePrev = previousWindowDeals.filter(d => d.forecast_category === 'BEST_CASE').reduce((s, d) => s + d.amount, 0);
+  const slippageCurrent = currentWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).length;
+  const slippagePrev = previousWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).length;
+  const slippageAmountCurrent = currentWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).reduce((s, d) => s + d.amount, 0);
+  const slippageAmountPrev = previousWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).reduce((s, d) => s + d.amount, 0);
+  const newlyCommittedCurrent = mockDeals.filter(d => d.forecast_category === 'COMMIT' && d.staleness_days <= cfg.staleCur).length;
+  const newlyCommittedPrev = mockDeals.filter(d => d.forecast_category === 'COMMIT' && d.staleness_days >= cfg.stalePrevMin && d.staleness_days <= cfg.stalePrevMax).length;
+  const newlyCommittedAmountCurrent = mockDeals.filter(d => d.forecast_category === 'COMMIT' && d.staleness_days <= cfg.staleCur).reduce((s, d) => s + d.amount, 0);
+  const newlyCommittedAmountPrev = mockDeals.filter(d => d.forecast_category === 'COMMIT' && d.staleness_days >= cfg.stalePrevMin && d.staleness_days <= cfg.stalePrevMax).reduce((s, d) => s + d.amount, 0);
+  const currentCommitSet = currentWindowDeals.filter(d => d.forecast_category === 'COMMIT');
+  const prevCommitSet = previousWindowDeals.filter(d => d.forecast_category === 'COMMIT');
+  const forecastAccuracyCurrent = currentCommitSet.length ? Math.round((currentCommitSet.filter(d => d.risk_level !== 'RED').length / currentCommitSet.length) * 100) : 0;
+  const forecastAccuracyPrev = prevCommitSet.length ? Math.round((prevCommitSet.filter(d => d.risk_level !== 'RED').length / prevCommitSet.length) * 100) : 0;
+  const unitLabel = cfg.unit === 'week' ? 'week' : cfg.unit === 'month' ? 'month' : 'quarter';
+  const trendTextSame = `Same as last ${unitLabel}`;
+  const formatDeltaCurrency = (delta: number) => {
+    const sign = delta > 0 ? '+' : '-';
+    const abs = Math.abs(delta);
+    return `${sign}${formatCurrency(abs)}`;
+  };
+  const formatDeltaCount = (delta: number) => {
+    if (delta === 0) return trendTextSame;
+    const sign = delta > 0 ? '+' : '';
+    return `${sign}${delta} vs last ${unitLabel}`;
+  };
+  const formatDeltaPercent = (delta: number) => {
+    if (delta === 0) return trendTextSame;
+    const sign = delta > 0 ? '+' : '';
+    return `${sign}${Math.abs(delta)}% vs last ${unitLabel}`;
+  };
+  const commitDelta = commitCurrent - commitPrev;
+  const bestCaseDelta = bestCaseCurrent - bestCasePrev;
+  const slippageDelta = slippageCurrent - slippagePrev;
+  const newlyCommittedDelta = newlyCommittedCurrent - newlyCommittedPrev;
+  const slippageAmountDelta = slippageAmountCurrent - slippageAmountPrev;
+  const newlyCommittedAmountDelta = newlyCommittedAmountCurrent - newlyCommittedAmountPrev;
+  const forecastDelta = forecastAccuracyCurrent - forecastAccuracyPrev;
+  const baseMonthlyTarget = 1200000;
+  const targetAmount = timeRange === 'This week'
+    ? Math.round(baseMonthlyTarget / 4)
+    : timeRange === 'This quarter'
+    ? baseMonthlyTarget * 3
+    : baseMonthlyTarget;
+  const now = new Date();
+  const formatMonthLabel = (d: Date) =>
+    `${d.toLocaleString('en-US', { month: 'short' })} ${d.getFullYear()}`;
+  const formatQuarterLabel = (d: Date) => {
+    const q = Math.floor(d.getMonth() / 3) + 1;
+    return `Q${q} ${d.getFullYear()}`;
+  };
+  const formatWeekRangeLabel = (d: Date) => {
+    const day = d.getDay(); // 0 Sun - 6 Sat
+    const diffToMonday = (day + 6) % 7;
+    const start = new Date(d);
+    start.setDate(d.getDate() - diffToMonday);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const fmt = (x: Date) => x.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+    const sameYear = start.getFullYear() === end.getFullYear();
+    return `${fmt(start)}–${fmt(end)}${sameYear ? `, ${start.getFullYear()}` : `, ${start.getFullYear()}–${end.getFullYear()}`}`;
+  };
+  const targetPeriodLabel =
+    timeRange === 'This week'
+      ? formatWeekRangeLabel(now)
+      : timeRange === 'This quarter'
+      ? formatQuarterLabel(now)
+      : formatMonthLabel(now);
 
   return (
     <div className="flex flex-col">
       <PageHeader title="Manager View" subtitle="Forecast + Coaching overview">
-        <Button size="sm" onClick={() => navigate('/session')}>
+        {/* <Button size="sm" onClick={() => navigate('/session')}>
           <Play className="h-3.5 w-3.5 mr-1.5" />Start 1:1
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => navigate('/prep')}>
+        </Button> */}
+        {/* <Button variant="secondary" size="sm" onClick={() => navigate('/prep')}>
           <FileDown className="h-3.5 w-3.5 mr-1.5" />Generate Prep Pack
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        </Button> */}
+        {/* <Button variant="ghost" size="icon" className="h-8 w-8">
           <Settings className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </PageHeader>
 
-      <FilterStrip timeRange={timeRange} onTimeRangeChange={setTimeRange} />
+      <FilterStrip timeRange={timeRange} onTimeRangeChange={setTimeRange} showFrequency={false} />
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-5 gap-4 px-6 py-4">
-        <KPICard label="Forecast Accuracy" value="73%" trend="up" trendLabel="+4% vs last month" trendPositive />
-        <KPICard label="Commit" value={formatCurrency(commitTotal)} trend="down" trendLabel="-$120K this week" trendPositive={false} />
-        <KPICard label="Best Case" value={formatCurrency(bestCaseTotal)} trend="up" trendLabel="+$85K" trendPositive />
-        <KPICard label="Slippage" value={String(slippageCount)} trend="flat" trendLabel="Same as last week" />
-        <KPICard label="Overdue Actions" value={String(overdueCount)} trend="down" trendLabel="2 resolved" trendPositive />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 px-4 sm:px-6 py-4">
+        <KPICard
+          label="Forecast Accuracy"
+          value={`${forecastAccuracyCurrent}%`}
+          trend={forecastDelta === 0 ? 'flat' : forecastDelta > 0 ? 'up' : 'down'}
+          trendLabel={formatDeltaPercent(forecastDelta)}
+          trendPositive={forecastAccuracyCurrent >= forecastAccuracyPrev}
+        />
+        <KPICard
+          label="Target"
+          value={formatCurrency(targetAmount)}
+          trend="flat"
+          trendLabel={targetPeriodLabel}
+        />
+        <KPICard
+          label="Commit"
+          value={formatCurrency(commitCurrent)}
+          secondaryValue={`${commitCountCurrent} deals`}
+          trend={commitDelta === 0 ? 'flat' : commitDelta > 0 ? 'up' : 'down'}
+          trendLabel={commitDelta === 0 ? trendTextSame : `${formatDeltaCurrency(commitDelta)} vs last ${unitLabel}`}
+          trendPositive={commitDelta > 0}
+        />
+        <KPICard
+          label="Best Case"
+          value={formatCurrency(bestCaseCurrent)}
+          trend={bestCaseDelta === 0 ? 'flat' : bestCaseDelta > 0 ? 'up' : 'down'}
+          trendLabel={bestCaseDelta === 0 ? trendTextSame : `${formatDeltaCurrency(bestCaseDelta)} vs last ${unitLabel}`}
+          trendPositive={bestCaseDelta > 0}
+        />
+        <KPICard
+          label="Slippage"
+          value={formatCurrency(slippageAmountCurrent)}
+          secondaryValue={`${slippageCurrent} deals`}
+          trend={slippageAmountDelta === 0 ? 'flat' : slippageAmountDelta > 0 ? 'up' : 'down'}
+          trendLabel={slippageAmountDelta === 0 ? trendTextSame : `${formatDeltaCurrency(slippageAmountDelta)} vs last ${unitLabel}`}
+          trendPositive={slippageAmountDelta < 0}
+        />
+        <KPICard
+          label="Newly Committed"
+          value={formatCurrency(newlyCommittedAmountCurrent)}
+          secondaryValue={`${newlyCommittedCurrent} deals`}
+          trend={newlyCommittedAmountDelta === 0 ? 'flat' : newlyCommittedAmountDelta > 0 ? 'up' : 'down'}
+          trendLabel={newlyCommittedAmountDelta === 0 ? trendTextSame : `${formatDeltaCurrency(newlyCommittedAmountDelta)} vs last ${unitLabel}`}
+          trendPositive={newlyCommittedAmountDelta > 0}
+        />
       </div>
 
       {/* Attention Queue + AE Table */}
-      <div className="grid grid-cols-2 gap-4 px-6 pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4 sm:px-6 pb-4">
         {/* Attention Queue Preview */}
         <div className="col-span-1 rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -63,7 +178,15 @@ export default function ManagerView() {
                 deal={deal}
                 compact
                 onClick={() => navigate('/queue')}
-                onPin={() => {}}
+                pinned={pinnedDealIds.includes(deal.deal_id)}
+                onPin={() => {
+                  setPinnedDealIds((prev) =>
+                    prev.includes(deal.deal_id)
+                      ? prev.filter((id) => id !== deal.deal_id)
+                      : [...prev, deal.deal_id]
+                  );
+                }}
+                onStart={() => navigate('/session')}
               />
             ))}
           </div>
@@ -119,7 +242,7 @@ export default function ManagerView() {
       </div>
 
       {/* Funnel + Dwell Time */}
-      <div className="grid grid-cols-2 gap-4 px-6 pb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4 sm:px-6 pb-6">
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Stage Conversion Funnel</h2>

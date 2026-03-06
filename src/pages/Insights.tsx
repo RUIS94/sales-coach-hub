@@ -42,7 +42,7 @@ export default function Insights() {
 
       <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="forecast" className="w-full">
-          <div className="px-6 pt-4">
+          <div className="px-4 sm:px-6 pt-4">
             <TabsList className="bg-muted h-9 p-0.5">
               <TabsTrigger value="forecast" className="text-xs data-[state=active]:bg-card">Forecast Integrity</TabsTrigger>
               <TabsTrigger value="pipeline" className="text-xs data-[state=active]:bg-card">Pipeline Quality</TabsTrigger>
@@ -50,9 +50,9 @@ export default function Insights() {
             </TabsList>
           </div>
 
-          <TabsContent value="forecast" className="px-6 pb-6 space-y-4 mt-4">
+          <TabsContent value="forecast" className="px-4 sm:px-6 pb-6 space-y-4 mt-4">
             {/* Two charts */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border bg-card p-4">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Forecast Accuracy Over Time</h3>
                 <ResponsiveContainer width="100%" height={200}>
@@ -101,44 +101,48 @@ export default function Insights() {
             </div>
 
             {/* Drilldown table */}
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="rounded-lg border border-border bg-card">
               <div className="px-4 py-3 border-b border-border">
                 <h3 className="text-sm font-semibold text-foreground">By AE Breakdown</h3>
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">AE</th>
-                    <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Commit</th>
-                    <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Accuracy</th>
-                    <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Slip Rate</th>
-                    <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Hygiene</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockAEReps.map((rep) => (
-                    <tr key={rep.user_id} className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15">
-                      <td className="px-4 py-2.5 font-medium text-foreground">{rep.name}</td>
-                      <td className="text-right px-3 py-2.5">{formatCurrency(rep.commit_amount)}</td>
-                      <td className="text-right px-3 py-2.5">{65 + Math.floor(Math.random() * 20)}%</td>
-                      <td className="text-right px-3 py-2.5">{5 + Math.floor(Math.random() * 25)}%</td>
-                      <td className="text-right px-3 py-2.5">
-                        <span className={rep.hygiene_score < 70 ? 'text-status-amber' : ''}>{rep.hygiene_score}%</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <div className="inline-block min-w-[640px]">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">AE</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Commit</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Accuracy</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Slip Rate</th>
+                        <th className="text-right px-3 py-2 text-xs font-medium text-muted-foreground">Hygiene</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockAEReps.map((rep) => (
+                        <tr key={rep.user_id} className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15">
+                          <td className="px-4 py-2.5 font-medium text-foreground">{rep.name}</td>
+                          <td className="text-right px-3 py-2.5">{formatCurrency(rep.commit_amount)}</td>
+                          <td className="text-right px-3 py-2.5">{65 + Math.floor(Math.random() * 20)}%</td>
+                          <td className="text-right px-3 py-2.5">{5 + Math.floor(Math.random() * 25)}%</td>
+                          <td className="text-right px-3 py-2.5">
+                            <span className={rep.hygiene_score < 70 ? 'text-status-amber' : ''}>{rep.hygiene_score}%</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="pipeline" className="px-6 pb-6 mt-4">
+          <TabsContent value="pipeline" className="px-4 sm:px-6 pb-6 mt-4">
             <div className="flex items-center justify-center h-64 rounded-lg border border-border bg-card">
               <p className="text-sm text-muted-foreground">Pipeline quality analysis coming soon</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="coaching" className="px-6 pb-6 mt-4">
+          <TabsContent value="coaching" className="px-4 sm:px-6 pb-6 mt-4">
             <div className="flex items-center justify-center h-64 rounded-lg border border-border bg-card">
               <p className="text-sm text-muted-foreground">Coaching ROI metrics coming soon</p>
             </div>

@@ -74,60 +74,67 @@ function risk(code: RiskCode, severity: 'RED' | 'AMBER'): RiskReason {
   return { code, label: riskLabels[code], severity };
 }
 
+const today = new Date();
+const dateInDays = (days: number) => {
+  const d = new Date(today);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
 export const mockDeals: Deal[] = [
   {
     deal_id: '1', deal_name: 'Enterprise Platform License', account_name: 'Acme Corp',
     owner_name: 'Sarah Chen', amount: 285000, stage_name: 'Negotiation',
-    forecast_category: 'COMMIT', close_date: '2026-03-28', risk_score: 78,
+    forecast_category: 'COMMIT', close_date: dateInDays(22), risk_score: 78,
     risk_level: 'RED', risk_reasons: [risk('COMMIT_AT_RISK', 'RED'), risk('SINGLE_THREADED', 'RED'), risk('NO_MAP', 'AMBER')],
     staleness_days: 12, stage_dwell_days: 21, next_step: null, impact_rank: 1,
   },
   {
     deal_id: '2', deal_name: 'Data Analytics Suite', account_name: 'TechFlow Inc',
     owner_name: 'Marcus Johnson', amount: 195000, stage_name: 'Proposal',
-    forecast_category: 'COMMIT', close_date: '2026-03-21', risk_score: 65,
+    forecast_category: 'COMMIT', close_date: dateInDays(15), risk_score: 65,
     risk_level: 'AMBER', risk_reasons: [risk('CLOSE_DATE_MOVED', 'AMBER'), risk('MISSING_EB', 'RED')],
-    staleness_days: 5, stage_dwell_days: 14, next_step: { description: 'Security review call', date: '2026-03-10', is_buyer_confirmed: true }, impact_rank: 2,
+    staleness_days: 5, stage_dwell_days: 14, next_step: { description: 'Security review call', date: dateInDays(4), is_buyer_confirmed: true }, impact_rank: 2,
   },
   {
     deal_id: '3', deal_name: 'Cloud Migration Package', account_name: 'GlobalBank',
     owner_name: 'Sarah Chen', amount: 420000, stage_name: 'Discovery',
-    forecast_category: 'BEST_CASE', close_date: '2026-04-15', risk_score: 52,
+    forecast_category: 'BEST_CASE', close_date: dateInDays(40), risk_score: 52,
     risk_level: 'AMBER', risk_reasons: [risk('STAGE_STUCK', 'AMBER'), risk('WEAK_VALUE', 'AMBER')],
-    staleness_days: 3, stage_dwell_days: 28, next_step: { description: 'Workshop with IT team', date: '2026-03-12', is_buyer_confirmed: false }, impact_rank: 3,
+    staleness_days: 3, stage_dwell_days: 28, next_step: { description: 'Workshop with IT team', date: dateInDays(6), is_buyer_confirmed: false }, impact_rank: 3,
   },
   {
     deal_id: '4', deal_name: 'Security Compliance Tool', account_name: 'MedHealth',
     owner_name: 'Alex Rivera', amount: 156000, stage_name: 'Validation',
-    forecast_category: 'COMMIT', close_date: '2026-03-31', risk_score: 42,
+    forecast_category: 'COMMIT', close_date: dateInDays(25), risk_score: 42,
     risk_level: 'GREEN', risk_reasons: [],
-    staleness_days: 1, stage_dwell_days: 7, next_step: { description: 'Procurement sign-off', date: '2026-03-14', is_buyer_confirmed: true }, impact_rank: 4,
+    staleness_days: 1, stage_dwell_days: 7, next_step: { description: 'Procurement sign-off', date: dateInDays(8), is_buyer_confirmed: true }, impact_rank: 4,
   },
   {
     deal_id: '5', deal_name: 'HR Automation Platform', account_name: 'PeopleFirst',
     owner_name: 'Marcus Johnson', amount: 88000, stage_name: 'Negotiation',
-    forecast_category: 'BEST_CASE', close_date: '2026-04-05', risk_score: 71,
+    forecast_category: 'BEST_CASE', close_date: dateInDays(35), risk_score: 71,
     risk_level: 'RED', risk_reasons: [risk('NO_NEXT_STEP_DATE', 'RED'), risk('LOW_ACTIVITY', 'AMBER')],
     staleness_days: 18, stage_dwell_days: 35, next_step: null, impact_rank: 5,
   },
   {
     deal_id: '6', deal_name: 'DevOps Toolchain', account_name: 'CodeShip',
     owner_name: 'Priya Patel', amount: 132000, stage_name: 'Proposal',
-    forecast_category: 'PIPELINE', close_date: '2026-04-22', risk_score: 38,
+    forecast_category: 'PIPELINE', close_date: dateInDays(47), risk_score: 38,
     risk_level: 'GREEN', risk_reasons: [risk('NO_MAP', 'AMBER')],
-    staleness_days: 2, stage_dwell_days: 10, next_step: { description: 'Budget approval meeting', date: '2026-03-18', is_buyer_confirmed: true }, impact_rank: 6,
+    staleness_days: 2, stage_dwell_days: 10, next_step: { description: 'Budget approval meeting', date: dateInDays(12), is_buyer_confirmed: true }, impact_rank: 6,
   },
   {
     deal_id: '7', deal_name: 'Customer Success Platform', account_name: 'RetailMax',
     owner_name: 'Alex Rivera', amount: 210000, stage_name: 'Discovery',
-    forecast_category: 'BEST_CASE', close_date: '2026-04-30', risk_score: 58,
+    forecast_category: 'BEST_CASE', close_date: dateInDays(55), risk_score: 58,
     risk_level: 'AMBER', risk_reasons: [risk('SINGLE_THREADED', 'AMBER'), risk('MISSING_EB', 'AMBER')],
-    staleness_days: 7, stage_dwell_days: 18, next_step: { description: 'Exec sponsor intro', date: '2026-03-20', is_buyer_confirmed: false }, impact_rank: 7,
+    staleness_days: 7, stage_dwell_days: 18, next_step: { description: 'Exec sponsor intro', date: dateInDays(14), is_buyer_confirmed: false }, impact_rank: 7,
   },
   {
     deal_id: '8', deal_name: 'API Gateway Enterprise', account_name: 'FinServ Group',
     owner_name: 'Priya Patel', amount: 345000, stage_name: 'Negotiation',
-    forecast_category: 'COMMIT', close_date: '2026-03-25', risk_score: 82,
+    forecast_category: 'COMMIT', close_date: dateInDays(20), risk_score: 82,
     risk_level: 'RED', risk_reasons: [risk('COMMIT_AT_RISK', 'RED'), risk('CLOSE_DATE_MOVED', 'RED'), risk('MISSING_EB', 'RED')],
     staleness_days: 9, stage_dwell_days: 24, next_step: null, impact_rank: 8,
   },
@@ -143,12 +150,12 @@ export const mockAEReps: AERep[] = [
 ];
 
 export const mockTasks: Task[] = [
-  { task_id: '1', title: 'Send pricing proposal to Acme', owner_name: 'Sarah Chen', deal_name: 'Enterprise Platform License', due_date: '2026-03-05', status: 'TODO', is_overdue: false },
-  { task_id: '2', title: 'Schedule EB meeting for TechFlow', owner_name: 'Marcus Johnson', deal_name: 'Data Analytics Suite', due_date: '2026-03-03', status: 'TODO', is_overdue: true },
-  { task_id: '3', title: 'Update MAP for GlobalBank', owner_name: 'Sarah Chen', deal_name: 'Cloud Migration Package', due_date: '2026-03-07', status: 'IN_PROGRESS', is_overdue: false },
-  { task_id: '4', title: 'Follow up on security review', owner_name: 'Alex Rivera', deal_name: 'Security Compliance Tool', due_date: '2026-03-04', status: 'DONE', is_overdue: false },
-  { task_id: '5', title: 'Prepare competitive analysis', owner_name: 'Priya Patel', deal_name: 'API Gateway Enterprise', due_date: '2026-02-28', status: 'TODO', is_overdue: true },
-  { task_id: '6', title: 'Share case study with RetailMax', owner_name: 'Alex Rivera', deal_name: 'Customer Success Platform', due_date: '2026-03-10', status: 'TODO', is_overdue: false },
+  { task_id: '1', title: 'Send pricing proposal to Acme', owner_name: 'Sarah Chen', deal_name: 'Enterprise Platform License', due_date: dateInDays(2), status: 'TODO', is_overdue: false },
+  { task_id: '2', title: 'Schedule EB meeting for TechFlow', owner_name: 'Marcus Johnson', deal_name: 'Data Analytics Suite', due_date: dateInDays(-2), status: 'TODO', is_overdue: true },
+  { task_id: '3', title: 'Update MAP for GlobalBank', owner_name: 'Sarah Chen', deal_name: 'Cloud Migration Package', due_date: dateInDays(4), status: 'IN_PROGRESS', is_overdue: false },
+  { task_id: '4', title: 'Follow up on security review', owner_name: 'Alex Rivera', deal_name: 'Security Compliance Tool', due_date: dateInDays(-1), status: 'DONE', is_overdue: false },
+  { task_id: '5', title: 'Prepare competitive analysis', owner_name: 'Priya Patel', deal_name: 'API Gateway Enterprise', due_date: dateInDays(-5), status: 'TODO', is_overdue: true },
+  { task_id: '6', title: 'Share case study with RetailMax', owner_name: 'Alex Rivera', deal_name: 'Customer Success Platform', due_date: dateInDays(7), status: 'TODO', is_overdue: false },
 ];
 
 export const mockDecisions: Decision[] = [

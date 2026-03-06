@@ -29,7 +29,7 @@ export default function AttentionQueue() {
     <div className="flex flex-col h-full">
       <PageHeader title="Attention Queue" subtitle="Ranked deals needing action" />
 
-      <div className="grid grid-cols-5 items-center gap-3 px-6 py-2 border-b border-border bg-card/50">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-center gap-3 px-4 sm:px-6 py-2 border-b border-border bg-card/50">
         <div className="col-span-1">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -157,9 +157,9 @@ export default function AttentionQueue() {
       </div>
 
       {/* Split view */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
         {/* Left: Deal list */}
-        <div className="w-[58%] border-r border-border overflow-y-auto">
+        <div className="w-full lg:w-[58%] border-b lg:border-b-0 lg:border-r border-border overflow-y-auto">
           <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Sorted by: Manager Impact</span>
             <span className="text-xs text-muted-foreground">{filteredDeals.length} deals flagged</span>
@@ -188,7 +188,7 @@ export default function AttentionQueue() {
               </div>
 
               <Tabs defaultValue="summary" className="w-full">
-              <TabsList className="bg-muted w-full justify-between gap-0 h-9 p-0.5">
+              <TabsList className="bg-muted w-full justify-between gap-0 h-9 p-0.5 flex-wrap">
                   <TabsTrigger value="summary" className="text-xs data-[state=active]:bg-card flex-1">Summary</TabsTrigger>
                   <TabsTrigger value="evidence" className="text-xs data-[state=active]:bg-card flex-1">Evidence</TabsTrigger>
                   <TabsTrigger value="stakeholders" className="text-xs data-[state=active]:bg-card flex-1">Stakeholders</TabsTrigger>
@@ -233,7 +233,7 @@ export default function AttentionQueue() {
                   {/* Key fields */}
                   <div className="space-y-2">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key Fields</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                       <div className="flex justify-between py-1.5 px-2 bg-muted/50 rounded">
                         <span className="text-muted-foreground">Stage</span>
                         <span className="text-foreground font-medium">{selectedDeal.stage_name}</span>

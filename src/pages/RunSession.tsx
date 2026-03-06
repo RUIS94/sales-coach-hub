@@ -119,9 +119,9 @@ export default function RunSession() {
       </div>
 
       {/* Three-panel layout */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
         {/* Left rail: Steps */}
-        <div className="w-[200px] border-r border-border p-3 space-y-1 shrink-0 overflow-y-auto">
+        <div className="w-full lg:w-56 border-b lg:border-b-0 lg:border-r border-border p-3 space-y-1 lg:shrink-0 overflow-y-auto">
           {steps.map((step) => {
             const isActive = activeStep === step.id;
             const isDone = completedSteps.includes(step.id);
@@ -157,11 +157,11 @@ export default function RunSession() {
         </div>
 
         {/* Center panel: Active step content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6">
           {activeStep === 'snapshot' && (
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-foreground">Pipeline Snapshot</h2>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                 {[
                   { label: 'Commit', value: formatCurrency(commitDeals.reduce((s, d) => s + d.amount, 0)) },
                   { label: 'Best Case', value: '$718K' },
@@ -210,7 +210,7 @@ export default function RunSession() {
                       </div>
                       <span className="text-sm font-semibold">{formatCurrency(deal.amount)}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs text-muted-foreground">Buyer next step</label>
                         <input className="w-full h-8 rounded-md border border-border bg-secondary px-2 text-xs text-foreground" placeholder="Describe next step..." />
@@ -340,7 +340,7 @@ export default function RunSession() {
                           </Button>
                         ))}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="text-xs text-muted-foreground">Buyer next step</label>
                           <input className="w-full h-8 rounded-md border border-border bg-secondary px-2 text-xs text-foreground" placeholder="Required..." />
@@ -430,9 +430,9 @@ export default function RunSession() {
         </div>
 
         {/* Right panel: Notes/Actions/Evidence */}
-        <div className="w-[320px] border-l border-border shrink-0 overflow-y-auto">
+        <div className="w-full lg:w-[320px] border-t lg:border-t-0 lg:border-l border-border overflow-y-auto">
           <Tabs defaultValue="actions" className="w-full">
-            <TabsList className="w-full justify-start bg-card border-b border-border rounded-none h-10 p-0">
+            <TabsList className="w-full justify-start bg-card border-b border-border rounded-none min-h-10 p-0 flex-wrap">
               <TabsTrigger value="actions" className="text-xs rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 <ListTodo className="h-3 w-3 mr-1" />Actions
               </TabsTrigger>

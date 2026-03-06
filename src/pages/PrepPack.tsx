@@ -80,7 +80,7 @@ export default function PrepPack() {
       </PageHeader>
 
       {/* Progress bar */}
-      <div className="flex items-center gap-4 px-6 py-3 border-b border-border">
+      <div className="flex items-center gap-4 px-4 sm:px-6 py-3 border-b border-border">
         <div className="flex-1 flex items-center gap-3">
           <Progress value={(completedFields / totalFields) * 100} className="h-2 flex-1" />
           <span className="text-xs text-muted-foreground whitespace-nowrap">{completedFields}/{totalFields} complete</span>
@@ -90,9 +90,9 @@ export default function PrepPack() {
         </Button>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
         {/* Left: Main content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
           {/* Top 3 Deals */}
           <div>
             <h2 className="text-sm font-semibold text-foreground mb-3">Top 3 Deals by Impact</h2>
@@ -143,7 +143,7 @@ export default function PrepPack() {
                         {/* Required fields */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Required Fields</h4>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                             <button
                               type="button"
                               className="flex items-center gap-2 py-1.5 px-2 bg-muted/50 rounded hover:bg-primary/10 active:bg-primary/15 transition-colors"
@@ -212,7 +212,7 @@ export default function PrepPack() {
         </div>
 
         {/* Right rail: Session Summary */}
-        <div className="w-[320px] border-l border-border overflow-y-auto p-4 space-y-4 shrink-0">
+        <div className="w-full lg:w-[320px] border-t lg:border-t-0 lg:border-l border-border overflow-y-auto p-4 space-y-4 shrink-0">
           <h2 className="text-sm font-semibold text-foreground">Session Summary</h2>
 
           <div className="grid grid-cols-1 gap-2">

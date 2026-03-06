@@ -38,14 +38,15 @@ export default function PostSummary() {
         </Button>
       </PageHeader>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
         {/* Left: Main content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* Decisions */}
           <div>
             <h2 className="text-sm font-semibold text-foreground mb-3">Decisions</h2>
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+              <div className="rounded-lg border border-border overflow-hidden inline-block min-w-[720px]">
+                <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Deal</th>
@@ -68,7 +69,8 @@ export default function PostSummary() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -85,8 +87,9 @@ export default function PostSummary() {
           {/* Buyer Next Steps */}
           <div>
             <h2 className="text-sm font-semibold text-foreground mb-3">Buyer Next Steps</h2>
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+              <div className="rounded-lg border border-border overflow-hidden inline-block min-w-[600px]">
+                <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">Deal</th>
@@ -113,13 +116,14 @@ export default function PostSummary() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right rail: Tasks */}
-        <div className="w-[320px] border-l border-border overflow-y-auto p-4 shrink-0">
+        <div className="w-full lg:w-[320px] border-t lg:border-t-0 lg:border-l border-border overflow-y-auto p-4 shrink-0">
           <h2 className="text-sm font-semibold text-foreground mb-3">Tasks</h2>
           <div className="flex gap-2 mb-3">
             <Button

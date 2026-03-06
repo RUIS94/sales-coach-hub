@@ -9,9 +9,11 @@ interface DealRowProps {
   onClick?: () => void;
   onPin?: () => void;
   compact?: boolean;
+  pinned?: boolean;
+  onStart?: () => void;
 }
 
-export function DealRow({ deal, selected, onClick, onPin, compact }: DealRowProps) {
+export function DealRow({ deal, selected, onClick, onPin, compact, pinned = false, onStart }: DealRowProps) {
   return (
     <div
       onClick={onClick}
@@ -33,21 +35,37 @@ export function DealRow({ deal, selected, onClick, onPin, compact }: DealRowProp
           <span>{deal.stage_name}</span>
           <span>{deal.close_date}</span>
         </div>
-        {onPin && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => { e.stopPropagation(); onPin(); }}
-            className="opacity-0 group-hover:opacity-100 h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C]"
-          >
-            <Pin className="h-3 w-3 mr-1" />
-            Add to 1:1
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {onPin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); onPin(); }}
+              className={`h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C] ${pinned ? '' : 'opacity-0 group-hover:opacity-100'}`}
+            >
+              <Pin className={`h-3 w-3 mr-1 transform ${pinned ? 'rotate-45' : ''}`} />
+              {pinned ? 'Remove from 1:1' : 'Add to 1:1'}
+            </Button>
+          )}
+        </div>
       </div>
-      {deal.risk_reasons.length > 0 && (
-        <div className="mt-1">
-          <RiskChipSet risks={deal.risk_reasons} />
+      {(deal.risk_reasons.length > 0 || (pinned && onStart)) && (
+        <div className="mt-1 flex items-center justify-between">
+          <div className="min-w-0">
+            {deal.risk_reasons.length > 0 && <RiskChipSet risks={deal.risk_reasons} />}
+          </div>
+          {pinned && onStart && (
+            <Button
+              size="sm"
+              className="h-6 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStart();
+              }}
+            >
+              Start 1:1
+            </Button>
+          )}
         </div>
       )}
     </div>
