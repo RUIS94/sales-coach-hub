@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, Download, ArrowUpDown, Shield, Clock, AlertTriangle, Users, Map, FileText, ChevronDown, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,10 +16,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function AttentionQueue() {
   const [selectedDeal, setSelectedDeal] = useState<Deal>(mockDeals[0]);
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredDeals = mockDeals.filter(d =>
-    d.deal_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.account_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [timeRange, setTimeRange] = useState<"This week" | "This month" | "This quarter">("This month");
+  const cfg = timeRange === "This week" ? { staleCur: 7 } : timeRange === "This quarter" ? { staleCur: 90 } : { staleCur: 30 };
+  const filteredDeals = useMemo(() => {
+    const base = mockDeals.filter(d => d.staleness_days <= cfg.staleCur);
+    return base.filter(d =>
+      d.deal_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.account_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [timeRange, searchQuery]);
   const riskFilterOptions = ['Commit at Risk', 'Stage Stuck', 'No Next Step', 'Close Date Moved', 'Single Threaded'];
   const [selectedRisks, setSelectedRisks] = useState<string[]>(riskFilterOptions);
   const [forecastFilter, setForecastFilter] = useState<string>('all');
@@ -29,8 +34,25 @@ export default function AttentionQueue() {
     <div className="flex flex-col h-full">
       <PageHeader title="Attention Queue" subtitle="Ranked deals needing action" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-center gap-3 px-4 sm:px-6 py-2 border-b border-border bg-card/50">
-        <div className="col-span-1">
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-3 px-4 sm:px-6 py-2 border-b border-border bg-card/50">
+        <div className="flex-shrink-0">
+          <div className="inline-flex rounded-md border border-border overflow-hidden">
+            {(['This week','This month','This quarter'] as const).map((label) => (
+              <button
+                key={label}
+                onClick={() => setTimeRange(label)}
+                className={`rounded-none text-xs h-8 px-3 ${
+                  timeRange === label
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-primary/60 hover:text-primary-foreground active:bg-primary active:text-primary-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex-1 min-w-[240px] max-w-[420px]">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
@@ -41,10 +63,10 @@ export default function AttentionQueue() {
             />
           </div>
         </div>
-        <div className="col-span-1">
+        <div className="flex-shrink-0">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="w-full h-8 text-xs rounded-md border border-input bg-transparent px-3 inline-flex items-center justify-between ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary/10 active:bg-primary/15 data-[state=open]:bg-primary/15">
+              <button className="min-w-[170px] h-8 text-xs rounded-md border border-input bg-transparent px-3 inline-flex items-center justify-between ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary/10 active:bg-primary/15 data-[state=open]:bg-primary/15">
                 <span className="truncate">
                   Risk Type: {selectedRisks.length === riskFilterOptions.length ? 'All' : `${selectedRisks.length} selected`}
                 </span>
@@ -92,9 +114,9 @@ export default function AttentionQueue() {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="col-span-1">
+        <div className="flex-shrink-0">
           <Select value={forecastFilter} onValueChange={setForecastFilter}>
-            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+            <SelectTrigger className="w-40 h-8 text-xs bg-transparent">
               <SelectValue placeholder="Forecast category" />
             </SelectTrigger>
             <SelectContent>
@@ -105,9 +127,9 @@ export default function AttentionQueue() {
             </SelectContent>
           </Select>
         </div>
-        <div className="col-span-1">
+        <div className="flex-shrink-0">
           <Select value={stageFilter} onValueChange={setStageFilter}>
-            <SelectTrigger className="w-full h-8 text-xs bg-transparent">
+            <SelectTrigger className="w-40 h-8 text-xs bg-transparent">
               <SelectValue placeholder="Stage filter" />
             </SelectTrigger>
             <SelectContent>
@@ -120,8 +142,7 @@ export default function AttentionQueue() {
             </SelectContent>
           </Select>
         </div>
-        <div className="col-span-1">
-          <div className="flex items-center justify-end gap-2">
+        <div className="ml-auto flex items-center justify-end gap-2 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
@@ -152,7 +173,6 @@ export default function AttentionQueue() {
               </TooltipTrigger>
               <TooltipContent side="top">Export</TooltipContent>
             </Tooltip>
-          </div>
         </div>
       </div>
 

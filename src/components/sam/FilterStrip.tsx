@@ -7,14 +7,15 @@ interface FilterStripProps {
   onTimeRangeChange: (v: string) => void;
   children?: React.ReactNode;
   showFrequency?: boolean;
+  narrowSelects?: boolean;
 }
 
-export function FilterStrip({ timeRange, onTimeRangeChange, children, showFrequency = true }: FilterStripProps) {
+export function FilterStrip({ timeRange, onTimeRangeChange, children, showFrequency = true, narrowSelects = false }: FilterStripProps) {
   const [frequency, setFrequency] = useState<"weekly" | "fortnightly">("weekly");
   return (
-    <div className={`${showFrequency ? 'grid grid-cols-[auto,1fr,1fr,auto]' : 'grid grid-cols-[auto,1fr,1fr]'} items-center gap-6 px-6 py-2 border-b border-border bg-card/50`}>
+    <div className={`${narrowSelects ? 'flex flex-wrap items-center gap-2 px-3' : (showFrequency ? 'grid grid-cols-[auto,1fr,1fr,auto] items-center gap-6 px-6' : 'grid grid-cols-[auto,1fr,1fr] items-center gap-6 px-6')} py-2 border-b border-border bg-card/50`}>
       {/* Container 1: Time range (left aligned) */}
-      <div className="flex-shrink-0">
+      <div className={`${narrowSelects ? '' : 'flex-shrink-0'}`}>
         <div className="inline-flex w-fit rounded-md border border-border overflow-hidden">
           {['This week', 'This month', 'This quarter'].map((label) => (
             <Button
@@ -34,7 +35,7 @@ export function FilterStrip({ timeRange, onTimeRangeChange, children, showFreque
         </div>
       </div>
       {/* Container 2: Team / AE (center-left) */}
-      <div className="w-full min-w-[260px] sm:min-w-[280px] md:min-w-[320px]">
+      <div className={`${narrowSelects ? 'w-[200px] sm:w-[220px] md:w-[240px]' : 'w-full min-w-[260px] sm:min-w-[280px] md:min-w-[320px]'}`}>
         <Select defaultValue="all">
           <SelectTrigger className="w-full h-8 text-xs bg-transparent">
             <SelectValue placeholder="Team / AE" />
@@ -49,7 +50,7 @@ export function FilterStrip({ timeRange, onTimeRangeChange, children, showFreque
         </Select>
       </div>
       {/* Container 3: Segment / Region (center-right) */}
-      <div className="w-full min-w-[260px] sm:min-w-[280px] md:min-w-[320px]">
+      <div className={`${narrowSelects ? 'w-[200px] sm:w-[220px] md:w-[240px]' : 'w-full min-w-[260px] sm:min-w-[280px] md:min-w-[320px]'}`}>
         <Select defaultValue="all">
           <SelectTrigger className="w-full h-8 text-xs bg-transparent">
             <SelectValue placeholder="Segment / Region" />
@@ -66,7 +67,7 @@ export function FilterStrip({ timeRange, onTimeRangeChange, children, showFreque
         </Select>
       </div>
       {/* Container 4: Weekly vs Fortnightly (right aligned) */}
-      {showFrequency && (
+      {!narrowSelects && showFrequency && (
         <div className="flex-shrink-0">
           <div className="inline-flex w-fit rounded-md border border-border overflow-hidden">
             {[

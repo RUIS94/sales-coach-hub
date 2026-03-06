@@ -11,6 +11,7 @@ import RunSession from "./pages/RunSession";
 import PostSummary from "./pages/PostSummary";
 import Insights from "./pages/Insights";
 import NotFound from "./pages/NotFound";
+import CommitQueue from "./pages/CommitQueue";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/" element={<ManagerView />} />
             <Route path="/queue" element={<AttentionQueue />} />
+            <Route path="/commit-queue" element={<CommitQueue />} />
             <Route path="/prep" element={<PrepPack />} />
             <Route path="/session" element={<RunSession />} />
             <Route path="/summary" element={<PostSummary />} />

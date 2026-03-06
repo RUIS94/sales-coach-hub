@@ -7,9 +7,10 @@ interface KPICardProps {
   trend?: 'up' | 'down' | 'flat';
   trendLabel?: string;
   trendPositive?: boolean;
+  onClick?: () => void;
 }
 
-export function KPICard({ label, value, secondaryValue, trend, trendLabel, trendPositive }: KPICardProps) {
+export function KPICard({ label, value, secondaryValue, trend, trendLabel, trendPositive, onClick }: KPICardProps) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
   const trendColor = trendPositive
     ? 'text-status-green'
@@ -18,7 +19,12 @@ export function KPICard({ label, value, secondaryValue, trend, trendLabel, trend
       : 'text-status-red';
 
   return (
-    <div className="flex flex-col justify-between rounded-lg border border-border bg-card p-4 min-h-[96px] transition-colors transition-transform duration-150 hover:shadow-sm hover:-translate-y-0.5">
+    <div
+      className={`flex flex-col justify-between rounded-lg border border-border bg-card p-4 min-h-[96px] transition-colors transition-transform duration-150 hover:shadow-sm hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' as const : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <div className="flex items-baseline">
         <div className="relative inline-block pr-12">

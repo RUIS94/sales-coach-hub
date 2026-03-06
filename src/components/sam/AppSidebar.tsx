@@ -17,6 +17,7 @@ import { useLocation } from "react-router-dom";
 const navItems = [
   { title: "Manager View", url: "/", icon: LayoutDashboard },
   { title: "Attention Queue", url: "/queue", icon: AlertTriangle },
+  { title: "Commit Queue", url: "/commit-queue", icon: Zap },
   { title: "Prep Packs", url: "/prep", icon: FileText },
   { title: "Run 1:1", url: "/session", icon: Radio },
   { title: "Post-1:1", url: "/summary", icon: ClipboardCheck },

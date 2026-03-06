@@ -11,9 +11,11 @@ interface DealRowProps {
   compact?: boolean;
   pinned?: boolean;
   onStart?: () => void;
+  hideRisks?: boolean;
+  riskMax?: number;
 }
 
-export function DealRow({ deal, selected, onClick, onPin, compact, pinned = false, onStart }: DealRowProps) {
+export function DealRow({ deal, selected, onClick, onPin, compact, pinned = false, onStart, hideRisks, riskMax }: DealRowProps) {
   return (
     <div
       onClick={onClick}
@@ -49,10 +51,20 @@ export function DealRow({ deal, selected, onClick, onPin, compact, pinned = fals
           )}
         </div>
       </div>
-      {(deal.risk_reasons.length > 0 || (pinned && onStart)) && (
+      {(deal.risk_reasons.length > 0 || deal.forecast_category === 'COMMIT' || (pinned && onStart)) && (
         <div className="mt-1 flex items-center justify-between">
-          <div className="min-w-0">
-            {deal.risk_reasons.length > 0 && <RiskChipSet risks={deal.risk_reasons} />}
+          <div className="min-w-0 flex items-center gap-2">
+            {deal.risk_reasons.length > 0 && !hideRisks && <RiskChipSet risks={deal.risk_reasons} max={riskMax} />}
+            {deal.forecast_category === 'COMMIT' && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    !deal.next_step ? 'bg-muted-foreground' : deal.next_step.is_buyer_confirmed ? 'bg-status-green' : 'bg-status-amber'
+                  }`}
+                />
+                {!deal.next_step ? 'No next step' : deal.next_step.is_buyer_confirmed ? 'Buyer confirmed' : 'Buyer not confirmed'}
+              </span>
+            )}
           </div>
           {pinned && onStart && (
             <Button
