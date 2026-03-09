@@ -24,6 +24,7 @@ export default function ManagerView() {
   const [eaPopupOpen, setEaPopupOpen] = useState(false);
   const [eaPopupData, setEaPopupData] = useState<{ title: string; content: string; value: number } | null>(null);
   const [kpiDialog, setKpiDialog] = useState<{ label: string; content: JSX.Element } | null>(null);
+  const [selectedAE, setSelectedAE] = useState<string | null>(null);
   const navigate = useNavigate();
   const topDeals = mockDeals.slice(0, 6);
   const cfg =
@@ -37,8 +38,16 @@ export default function ManagerView() {
   const commitCurrent = currentWindowDeals.filter(d => d.forecast_category === 'COMMIT').reduce((s, d) => s + d.amount, 0);
   const commitPrev = previousWindowDeals.filter(d => d.forecast_category === 'COMMIT').reduce((s, d) => s + d.amount, 0);
   const commitCountCurrent = currentWindowDeals.filter(d => d.forecast_category === 'COMMIT').length;
-  const bestCaseCurrent = currentWindowDeals.filter(d => d.forecast_category === 'BEST_CASE').reduce((s, d) => s + d.amount, 0);
-  const bestCasePrev = previousWindowDeals.filter(d => d.forecast_category === 'BEST_CASE').reduce((s, d) => s + d.amount, 0);
+  const bestCaseTopCur = currentWindowDeals
+    .filter(d => d.forecast_category === 'BEST_CASE')
+    .slice()
+    .sort((a, b) => b.amount - a.amount)[0] || null;
+  const bestCaseTopPrev = previousWindowDeals
+    .filter(d => d.forecast_category === 'BEST_CASE')
+    .slice()
+    .sort((a, b) => b.amount - a.amount)[0] || null;
+  const bestCaseCurrent = Math.min(bestCaseTopCur ? bestCaseTopCur.amount : 0, commitCurrent);
+  const bestCasePrev = Math.min(bestCaseTopPrev ? bestCaseTopPrev.amount : 0, commitPrev);
   const slippageCurrent = currentWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).length;
   const slippagePrev = previousWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).length;
   const slippageAmountCurrent = currentWindowDeals.filter(d => d.risk_reasons.some(r => r.code === 'CLOSE_DATE_MOVED')).reduce((s, d) => s + d.amount, 0);
@@ -75,6 +84,17 @@ export default function ManagerView() {
   const slippageAmountDelta = slippageAmountCurrent - slippageAmountPrev;
   const newlyCommittedAmountDelta = newlyCommittedAmountCurrent - newlyCommittedAmountPrev;
   const forecastDelta = forecastAccuracyCurrent - forecastAccuracyPrev;
+  const worstCaseTopCur = currentWindowDeals
+    .filter(d => d.forecast_category === 'COMMIT' && d.risk_level === 'RED')
+    .slice()
+    .sort((a, b) => b.amount - a.amount)[0] || null;
+  const worstCaseTopPrev = previousWindowDeals
+    .filter(d => d.forecast_category === 'COMMIT' && d.risk_level === 'RED')
+    .slice()
+    .sort((a, b) => b.amount - a.amount)[0] || null;
+  const worstCaseCurrent = worstCaseTopCur ? worstCaseTopCur.amount : 0;
+  const worstCasePrev = worstCaseTopPrev ? worstCaseTopPrev.amount : 0;
+  const worstCaseDelta = worstCaseCurrent - worstCasePrev;
   const attentionQueueDeals = currentWindowDeals
     .slice()
     .sort((a, b) => {
@@ -146,7 +166,7 @@ export default function ManagerView() {
       : formatMonthLabel(now);
   const funnelStages = ['Discovery', 'Validation', 'Proposal', 'Negotiation', 'Closed Won'];
   const bench: Record<string, number> = { 'Discovery': 10, 'Validation': 8, 'Proposal': 12, 'Negotiation': 10, 'Closed Won': 0 };
-  const dealsForFunnel = currentWindowDeals;
+  const dealsForFunnel = selectedAE ? currentWindowDeals.filter(d => d.owner_name === selectedAE) : [];
   const stageAgg = funnelStages.map(s => {
     const ds = dealsForFunnel.filter(d => d.stage_name === s);
     const revenue = ds.reduce((sum, d) => sum + d.amount, 0);
@@ -190,91 +210,11 @@ export default function ManagerView() {
       {/* KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 px-4 sm:px-6 py-4">
         <KPICard
-          label="Forecast Accuracy"
-          value={`${forecastAccuracyCurrent}%`}
-          trend={forecastDelta === 0 ? 'flat' : forecastDelta > 0 ? 'up' : 'down'}
-          trendLabel={formatDeltaPercent(forecastDelta)}
-          trendPositive={forecastAccuracyCurrent >= forecastAccuracyPrev}
-          onClick={() => {
-            const content = (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                  <div className="rounded border border-border p-2">
-                    <div className="text-muted-foreground">Current</div>
-                    <div className="text-foreground font-medium">{forecastAccuracyCurrent}%</div>
-                  </div>
-                  <div className="rounded border border-border p-2">
-                    <div className="text-muted-foreground">Previous</div>
-                    <div className="text-foreground font-medium">{forecastAccuracyPrev}%</div>
-                  </div>
-                  <div className="rounded border border-border p-2">
-                    <div className="text-muted-foreground">Delta</div>
-                    <div className="text-foreground font-medium">{forecastDelta >= 0 ? `+${forecastDelta}%` : `${forecastDelta}%`}</div>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground">Compared to last {unitLabel}</div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded border border-border p-2">
-                    <div className="text-muted-foreground">Non-RED in Commit</div>
-                    <div className="text-foreground font-medium">
-                      {commitQueueDeals.filter(d => d.risk_level !== 'RED').length} / {commitQueueDeals.length}
-                    </div>
-                  </div>
-                  <div className="rounded border border-border p-2">
-                    <div className="text-muted-foreground">RED in Commit</div>
-                    <div className="text-foreground font-medium">
-                      {commitQueueDeals.filter(d => d.risk_level === 'RED').length}
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded border border-border overflow-hidden">
-                  <div className="px-3 py-2 border-b border-border text-[11px] text-muted-foreground">Top RED-risk Commit deals</div>
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-border text-muted-foreground">
-                        <th className="text-left px-3 py-2 font-medium">Deal</th>
-                        <th className="text-right px-3 py-2 font-medium">Value</th>
-                        <th className="text-left px-3 py-2 font-medium">AE</th>
-                        <th className="text-left px-3 py-2 font-medium">Risk</th>
-                        <th className="text-right px-3 py-2 font-medium">Close</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {commitQueueDeals
-                        .filter(d => d.risk_level === 'RED')
-                        .slice(0, 8)
-                        .map(d => (
-                          <tr key={d.deal_id} className="border-b border-border last:border-0">
-                            <td className="px-3 py-2">{d.account_name} / {d.deal_name}</td>
-                            <td className="px-3 py-2 text-right">{formatCurrency(d.amount)}</td>
-                            <td className="px-3 py-2">{d.owner_name}</td>
-                            <td className="px-3 py-2">
-                              <span className="inline-flex items-center gap-1">
-                                <StatusDot level={d.risk_level} />
-                                <span className="text-muted-foreground">{d.risk_reasons?.[0]?.code || '—'}</span>
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-right">{new Date(d.close_date).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                      {commitQueueDeals.filter(d => d.risk_level === 'RED').length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">No RED-risk deals in Commit.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-            setKpiDialog({ label: 'Forecast Accuracy', content });
-          }}
-        />
-        <KPICard
           label="Target"
           value={formatCurrency(targetAmount)}
-          trend="flat"
-          trendLabel={targetPeriodLabel}
+          trend={commitDelta === 0 ? 'flat' : commitDelta > 0 ? 'up' : 'down'}
+          trendLabel={`${formatDeltaCurrency(commitDelta)} vs last ${unitLabel}`}
+          trendPositive={commitDelta > 0}
           onClick={() => {
             const content = (
               <div className="space-y-3">
@@ -347,6 +287,8 @@ export default function ManagerView() {
             setKpiDialog({ label: 'Target', content });
           }}
         />
+        
+        
         <KPICard
           label="Commit"
           value={formatCurrency(commitCurrent)}
@@ -441,7 +383,7 @@ export default function ManagerView() {
                 </div>
                 <div className="text-xs text-muted-foreground">Compared to last {unitLabel}</div>
                 <div className="rounded border border-border overflow-hidden">
-                  <div className="px-3 py-2 border-b border-border text-[11px] text-muted-foreground">Best Case deals (Top 10 by value)</div>
+                  <div className="px-3 py-2 border-b border-border text-[11px] text-muted-foreground">Best Case deal</div>
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-border text-muted-foreground">
@@ -453,20 +395,15 @@ export default function ManagerView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentWindowDeals
-                        .filter(d => d.forecast_category === 'BEST_CASE')
-                        .slice()
-                        .sort((a, b) => b.amount - a.amount)
-                        .slice(0, 10)
-                        .map(d => (
-                          <tr key={d.deal_id} className="border-b border-border last:border-0">
-                            <td className="px-3 py-2">{d.account_name} / {d.deal_name}</td>
-                            <td className="px-3 py-2 text-right">{formatCurrency(d.amount)}</td>
-                            <td className="px-3 py-2">{d.owner_name}</td>
-                            <td className="px-3 py-2">{d.stage_name}</td>
-                            <td className="px-3 py-2 text-right">{new Date(d.close_date).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
+                      {bestCaseTopCur ? (
+                        <tr key={bestCaseTopCur.deal_id} className="border-b border-border last:border-0">
+                          <td className="px-3 py-2">{bestCaseTopCur.account_name} / {bestCaseTopCur.deal_name}</td>
+                          <td className="px-3 py-2 text-right">{formatCurrency(Math.min(bestCaseTopCur.amount, commitCurrent))}</td>
+                          <td className="px-3 py-2">{bestCaseTopCur.owner_name}</td>
+                          <td className="px-3 py-2">{bestCaseTopCur.stage_name}</td>
+                          <td className="px-3 py-2 text-right">{new Date(bestCaseTopCur.close_date).toLocaleDateString()}</td>
+                        </tr>
+                      ) : null}
                       {currentWindowDeals.filter(d => d.forecast_category === 'BEST_CASE').length === 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">No Best Case deals in current period.</td>
@@ -480,6 +417,67 @@ export default function ManagerView() {
             setKpiDialog({ label: 'Best Case', content });
           }}
         />
+
+        <KPICard
+          label="Worst Case"
+          value={formatCurrency(worstCaseCurrent)}
+          trend={worstCaseDelta === 0 ? 'flat' : worstCaseDelta > 0 ? 'up' : 'down'}
+          trendLabel={worstCaseDelta === 0 ? trendTextSame : `${formatDeltaCurrency(worstCaseDelta)} vs last ${unitLabel}`}
+          trendPositive={worstCaseDelta < 0}
+          onClick={() => {
+            const content = (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                  <div className="rounded border border-border p-2">
+                    <div className="text-muted-foreground">Current</div>
+                    <div className="text-foreground font-medium">{formatCurrency(worstCaseCurrent)}</div>
+                  </div>
+                  <div className="rounded border border-border p-2">
+                    <div className="text-muted-foreground">Previous</div>
+                    <div className="text-foreground font-medium">{formatCurrency(worstCasePrev)}</div>
+                  </div>
+                  <div className="rounded border border-border p-2">
+                    <div className="text-muted-foreground">Delta</div>
+                    <div className="text-foreground font-medium">{formatDeltaCurrency(worstCaseDelta)}</div>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground">Compared to last {unitLabel}</div>
+                <div className="rounded border border-border overflow-hidden">
+                  <div className="px-3 py-2 border-b border-border text-[11px] text-muted-foreground">Worst Case deal</div>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground">
+                        <th className="text-left px-3 py-2 font-medium">Deal</th>
+                        <th className="text-right px-3 py-2 font-medium">Value</th>
+                        <th className="text-left px-3 py-2 font-medium">AE</th>
+                        <th className="text-left px-3 py-2 font-medium">Stage</th>
+                        <th className="text-right px-3 py-2 font-medium">Close</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {worstCaseTopCur ? (
+                        <tr key={worstCaseTopCur.deal_id} className="border-b border-border last:border-0">
+                          <td className="px-3 py-2">{worstCaseTopCur.account_name} / {worstCaseTopCur.deal_name}</td>
+                          <td className="px-3 py-2 text-right">{formatCurrency(worstCaseCurrent)}</td>
+                          <td className="px-3 py-2">{worstCaseTopCur.owner_name}</td>
+                          <td className="px-3 py-2">{worstCaseTopCur.stage_name}</td>
+                          <td className="px-3 py-2 text-right">{new Date(worstCaseTopCur.close_date).toLocaleDateString()}</td>
+                        </tr>
+                      ) : null}
+                      {currentWindowDeals.filter(d => d.forecast_category === 'COMMIT' && d.risk_level === 'RED').length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">No RED-risk Commit deal in current period.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+            setKpiDialog({ label: 'Worst Case', content });
+          }}
+        />
+        
         <KPICard
           label="Slippage"
           value={formatCurrency(slippageAmountCurrent)}
@@ -626,9 +624,10 @@ export default function ManagerView() {
       {/* Funnel + AE Table (First Row) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4 sm:px-6 pb-4">
         {/* Stage Conversion Funnel */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+        <div className="rounded-lg border border-border bg-card p-4 order-2 lg:order-2">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-foreground">Stage Conversion Funnel</h2>
               <div className="inline-flex rounded-md border border-border overflow-hidden">
                 <button
@@ -644,76 +643,93 @@ export default function ManagerView() {
                   Deal Count
                 </button>
               </div>
+              </div>
+              {selectedAE && (
+                <div className="text-xs text-muted-foreground">
+                  AE: <span className="text-foreground font-medium">{selectedAE}</span>
+                </div>
+              )}
             </div>
             <Button
               variant="ghost"
               size="sm"
               className="text-xs text-muted-foreground hover:bg-transparent hover:text-[#FF8E1C]"
-              onClick={() => setStageDialog({ stage: stageAgg[biggestDropIdx >= 0 ? biggestDropIdx : 0].stage })}
+              onClick={() => {
+                if (!selectedAE) return;
+                setStageDialog({ stage: stageAgg[biggestDropIdx >= 0 ? biggestDropIdx : 0].stage });
+              }}
             >
               View details →
             </Button>
           </div>
-          <div className="space-y-1.5">
-            {stageAgg.map((s, idx) => {
-              const widthPct = totalRev > 0 ? Math.max(2, Math.round((s.revenue / totalRev) * 100)) : 0;
-              const flagSlow = s.avgDwell > (bench[s.stage] ?? 0);
-              const flagRev = totalRev > 0 && s.revenue / totalRev > 0.35;
-              return (
-                <div key={s.stage} className="space-y-0.5">
-                  <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => setStageDialog({ stage: s.stage })}
-                    role="button"
-                    aria-label={`Open ${s.stage} details`}
-                  >
-                    <span className="text-xs text-muted-foreground w-24 shrink-0">{s.stage}</span>
-                    <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
-                      <div className="h-full bg-primary/30 rounded" style={{ width: `${widthPct}%` }} />
+          {!selectedAE ? (
+            <div className="h-40 rounded-md border border-dashed border-border bg-secondary/40 flex items-center justify-center text-xs text-muted-foreground">
+              Click an AE on the left to view Stage Conversion Funnel
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1.5">
+                {stageAgg.map((s, idx) => {
+                  const widthPct = totalRev > 0 ? Math.max(2, Math.round((s.revenue / totalRev) * 100)) : 0;
+                  const flagSlow = s.avgDwell > (bench[s.stage] ?? 0);
+                  const flagRev = totalRev > 0 && s.revenue / totalRev > 0.35;
+                  return (
+                    <div key={s.stage} className="space-y-0.5">
+                      <div
+                        className="flex items-center gap-3 cursor-pointer"
+                        onClick={() => setStageDialog({ stage: s.stage })}
+                        role="button"
+                        aria-label={`Open ${s.stage} details`}
+                      >
+                        <span className="text-xs text-muted-foreground w-24 shrink-0">{s.stage}</span>
+                        <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
+                          <div className="h-full bg-primary/30 rounded" style={{ width: `${widthPct}%` }} />
+                        </div>
+                        <span className="text-xs font-medium text-foreground w-28 md:w-32 shrink-0 text-right">
+                          {funnelView === 'revenue' ? formatCurrency(s.revenue) : `${s.count} deals`}
+                        </span>
+                      </div>
+                      {idx < stageAgg.length - 1 && (
+                        <div className="pl-24 text-[11px] flex items-center">
+                          <div className={`${conv[idx] < 40 ? 'text-status-amber' : 'text-muted-foreground'} flex-1`}>
+                            → {conv[idx]}% conversion
+                          </div>
+                          <div className="w-28 md:w-32 shrink-0 text-right">
+                            {(flagSlow || flagRev) && (
+                              <span className="inline-flex items-center gap-1 text-status-amber">
+                                {flagSlow && <span>Slow</span>}
+                                {flagRev && <span>Revenue</span>}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-xs font-medium text-foreground w-28 md:w-32 shrink-0 text-right">
-                      {funnelView === 'revenue' ? formatCurrency(s.revenue) : `${s.count} deals`}
-                    </span>
+                  );
+                })}
+              </div>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-muted-foreground">
+                <div>
+                  <div>Biggest drop-off</div>
+                  <div className="text-foreground">
+                    {biggestDropIdx >= 0 ? `${stageAgg[biggestDropIdx].stage} → ${stageAgg[biggestDropIdx + 1].stage} (${conv[biggestDropIdx]}%)` : '—'}
                   </div>
-                  {idx < stageAgg.length - 1 && (
-                    <div className="pl-24 text-[11px] flex items-center">
-                      <div className={`${conv[idx] < 40 ? 'text-status-amber' : 'text-muted-foreground'} flex-1`}>
-                        → {conv[idx]}% conversion
-                      </div>
-                      <div className="w-28 md:w-32 shrink-0 text-right">
-                        {(flagSlow || flagRev) && (
-                          <span className="inline-flex items-center gap-1 text-status-amber">
-                            {flagSlow && <span>Slow</span>}
-                            {flagRev && <span>Revenue</span>}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-muted-foreground">
-            <div>
-              <div>Biggest drop-off</div>
-              <div className="text-foreground">
-                {biggestDropIdx >= 0 ? `${stageAgg[biggestDropIdx].stage} → ${stageAgg[biggestDropIdx + 1].stage} (${conv[biggestDropIdx]}%)` : '—'}
+                <div>
+                  <div>Most revenue</div>
+                  <div className="text-foreground">
+                    {stageAgg[highestRevIdx]?.stage} ({formatCurrency(stageAgg[highestRevIdx]?.revenue || 0)})
+                  </div>
+                </div>
+                <div>
+                  <div>Slowest stage</div>
+                  <div className="text-foreground">
+                    {stageAgg[slowestIdx]?.stage} ({stageAgg[slowestIdx]?.avgDwell || 0}d avg)
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <div>Most revenue</div>
-              <div className="text-foreground">
-                {stageAgg[highestRevIdx]?.stage} ({formatCurrency(stageAgg[highestRevIdx]?.revenue || 0)})
-              </div>
-            </div>
-            <div>
-              <div>Slowest stage</div>
-              <div className="text-foreground">
-                {stageAgg[slowestIdx]?.stage} ({stageAgg[slowestIdx]?.avgDwell || 0}d avg)
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
         <Dialog open={!!stageDialog} onOpenChange={(open) => setStageDialog(open ? stageDialog : null)}>
           <DialogContent>
@@ -782,7 +798,7 @@ export default function ManagerView() {
         </Dialog>
 
         {/* AE Health Table */}
-        <div className="rounded-lg border border-border bg-card">
+        <div className="rounded-lg border border-border bg-card order-1 lg:order-1">
           <div className="px-4 py-3 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground">Forecast by AE</h2>
           </div>
@@ -802,7 +818,7 @@ export default function ManagerView() {
                   <tr
                     key={rep.user_id}
                     className="border-b border-border last:border-0 hover:bg-primary/10 active:bg-primary/15 cursor-pointer transition-colors"
-                    onClick={() => navigate('/prep')}
+                    onClick={() => setSelectedAE(rep.name)}
                   >
                     <td className="px-4 py-2.5 font-medium text-foreground">{rep.name}</td>
                     <td className="text-right px-3 py-2.5">{formatCurrency(rep.commit_amount)}</td>
@@ -851,7 +867,7 @@ export default function ManagerView() {
               <p className="text-xs text-muted-foreground">Top deals needing action this {unitLabel}</p>
             </div>
             <Button variant="ghost" size="sm" className="text-xs text-primary hover:bg-transparent hover:text-[#FF8E1C]" onClick={() => navigate('/queue')}>
-              View details →
+              View full queue →
             </Button>
           </div>
           <div className="max-h-[420px] overflow-y-auto">
@@ -896,7 +912,7 @@ export default function ManagerView() {
                 At Risk {atRiskCount}
               </span>
               <Button variant="ghost" size="sm" className="text-xs text-primary hover:bg-transparent hover:text-[#FF8E1C]" onClick={() => navigate('/commit-queue')}>
-                View details →
+                View full queue →
               </Button>
             </div>
           </div>
