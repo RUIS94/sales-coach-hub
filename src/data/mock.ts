@@ -138,6 +138,63 @@ export const mockDeals: Deal[] = [
     risk_level: 'RED', risk_reasons: [risk('COMMIT_AT_RISK', 'RED'), risk('CLOSE_DATE_MOVED', 'RED'), risk('MISSING_EB', 'RED')],
     staleness_days: 9, stage_dwell_days: 24, next_step: null, impact_rank: 8,
   },
+  // Hygiene-rich examples across more AEs
+  {
+    deal_id: '9', deal_name: 'Collaboration Suite', account_name: 'BrightApps',
+    owner_name: 'Jordan Kim', amount: 120000, stage_name: 'Validation',
+    forecast_category: 'PIPELINE', close_date: dateInDays(28), risk_score: 40,
+    risk_level: 'AMBER', risk_reasons: [risk('MISSING_EB', 'RED')],
+    staleness_days: 4, stage_dwell_days: 9, next_step: null, impact_rank: 9,
+  },
+  {
+    deal_id: '10', deal_name: 'Support Automation', account_name: 'HelpDeskCo',
+    owner_name: 'Jordan Kim', amount: 90000, stage_name: 'Proposal',
+    forecast_category: 'BEST_CASE', close_date: dateInDays(42), risk_score: 33,
+    risk_level: 'GREEN', risk_reasons: [],
+    staleness_days: 6, stage_dwell_days: 12, next_step: { description: 'EB sign-off', date: dateInDays(10), is_buyer_confirmed: true }, impact_rank: 10,
+  },
+  {
+    deal_id: '11', deal_name: 'Compliance Suite', account_name: 'SecureBank',
+    owner_name: 'Taylor Brooks', amount: 150000, stage_name: 'Negotiation',
+    forecast_category: 'COMMIT', close_date: dateInDays(18), risk_score: 70,
+    risk_level: 'AMBER', risk_reasons: [risk('NO_MAP', 'AMBER'), risk('SINGLE_THREADED', 'AMBER')],
+    staleness_days: 3, stage_dwell_days: 17, next_step: { description: 'Legal review', date: dateInDays(5), is_buyer_confirmed: false }, impact_rank: 11,
+  },
+  {
+    deal_id: '12', deal_name: 'API Observability', account_name: 'DevOps Labs',
+    owner_name: 'Taylor Brooks', amount: 110000, stage_name: 'Discovery',
+    forecast_category: 'PIPELINE', close_date: dateInDays(60), risk_score: 28,
+    risk_level: 'GREEN', risk_reasons: [],
+    staleness_days: 8, stage_dwell_days: 6, next_step: { description: 'CTO briefing', date: dateInDays(14), is_buyer_confirmed: true }, impact_rank: 12,
+  },
+  {
+    deal_id: '13', deal_name: 'Customer Data Platform', account_name: 'RetailData',
+    owner_name: 'Marcus Johnson', amount: 175000, stage_name: 'Validation',
+    forecast_category: 'PIPELINE', close_date: dateInDays(33), risk_score: 45,
+    risk_level: 'GREEN', risk_reasons: [],
+    staleness_days: 12, stage_dwell_days: 11, next_step: { description: 'Finalize scope', date: dateInDays(7), is_buyer_confirmed: true }, impact_rank: 13,
+  },
+  {
+    deal_id: '14', deal_name: 'Integration Hub', account_name: 'GlobalTech',
+    owner_name: 'Sarah Chen', amount: 220000, stage_name: 'Discovery',
+    forecast_category: 'BEST_CASE', close_date: dateInDays(50), risk_score: 60,
+    risk_level: 'AMBER', risk_reasons: [risk('STAGE_STUCK', 'AMBER')],
+    staleness_days: 10, stage_dwell_days: 20, next_step: { description: 'Exec alignment', date: dateInDays(9), is_buyer_confirmed: true }, impact_rank: 14,
+  },
+  {
+    deal_id: '15', deal_name: 'Workflow Intelligence', account_name: 'OpsSuite',
+    owner_name: 'Marcus Johnson', amount: 130000, stage_name: 'Validation',
+    forecast_category: 'PIPELINE', close_date: dateInDays(27), risk_score: 34,
+    risk_level: 'GREEN', risk_reasons: [],
+    staleness_days: 3, stage_dwell_days: 8, next_step: { description: 'Stakeholder sync', date: dateInDays(6), is_buyer_confirmed: true }, impact_rank: 15,
+  },
+  {
+    deal_id: '16', deal_name: 'Backoffice Automation', account_name: 'AcctPro',
+    owner_name: 'Marcus Johnson', amount: 160000, stage_name: 'Proposal',
+    forecast_category: 'BEST_CASE', close_date: dateInDays(45), risk_score: 36,
+    risk_level: 'GREEN', risk_reasons: [],
+    staleness_days: 5, stage_dwell_days: 12, next_step: { description: 'EB briefing', date: dateInDays(9), is_buyer_confirmed: true }, impact_rank: 16,
+  },
 ];
 
 export const mockAEReps: AERep[] = [

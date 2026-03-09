@@ -498,7 +498,7 @@ export default function RunSession() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => setSnapshotDialog(null)}>Close</Button>
+            <Button variant="outline" size="sm" className="text-xs hover:bg-muted hover:text-muted-foreground" onClick={() => setSnapshotDialog(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

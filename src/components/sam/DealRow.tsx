@@ -13,9 +13,11 @@ interface DealRowProps {
   onStart?: () => void;
   hideRisks?: boolean;
   riskMax?: number;
+  onDealClick?: (deal: Deal) => void;
+  onRiskClick?: (deal: Deal) => void;
 }
 
-export function DealRow({ deal, selected, onClick, onPin, compact, pinned = false, onStart, hideRisks, riskMax }: DealRowProps) {
+export function DealRow({ deal, selected, onClick, onPin, compact, pinned = false, onStart, hideRisks, riskMax, onDealClick, onRiskClick }: DealRowProps) {
   return (
     <div
       onClick={onClick}
@@ -27,7 +29,14 @@ export function DealRow({ deal, selected, onClick, onPin, compact, pinned = fals
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-medium text-foreground truncate">{deal.account_name}</span>
           <span className="text-muted-foreground">/</span>
-          <span className="text-sm text-secondary-foreground truncate">{deal.deal_name}</span>
+          <span
+            className="text-sm text-secondary-foreground truncate cursor-pointer hover:text-[#605BFF]"
+            onClick={(e) => { e.stopPropagation(); onDealClick?.(deal); }}
+            role="button"
+            aria-label="Open Analytics for deal"
+          >
+            {deal.deal_name}
+          </span>
         </div>
         <span className="text-sm font-semibold text-foreground ml-2 whitespace-nowrap">{formatCurrency(deal.amount)}</span>
       </div>
@@ -54,7 +63,16 @@ export function DealRow({ deal, selected, onClick, onPin, compact, pinned = fals
       {(deal.risk_reasons.length > 0 || deal.forecast_category === 'COMMIT' || (pinned && onStart)) && (
         <div className="mt-1 flex items-center justify-between">
           <div className="min-w-0 flex items-center gap-2">
-            {deal.risk_reasons.length > 0 && !hideRisks && <RiskChipSet risks={deal.risk_reasons} max={riskMax} />}
+            {deal.risk_reasons.length > 0 && !hideRisks && (
+              <span
+                className="cursor-pointer"
+                onClick={(e) => { e.stopPropagation(); onRiskClick?.(deal); }}
+                role="button"
+                aria-label="Open Analytics for risk"
+              >
+                <RiskChipSet risks={deal.risk_reasons} max={riskMax} />
+              </span>
+            )}
             {deal.forecast_category === 'COMMIT' && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground">
                 <span

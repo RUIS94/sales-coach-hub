@@ -41,6 +41,8 @@
     --status-amber-bg: 38 92% 12%;
     --status-green: 142 71% 45%;
     --status-green-bg: 142 71% 12%;
+    --status-yellow: 50 100% 50%;
+    --status-yellow-bg: 50 100% 12%;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -98,6 +100,9 @@
   .text-status-green {
     color: hsl(var(--status-green));
   }
+  .text-status-yellow {
+    color: hsl(var(--status-yellow));
+  }
   .bg-status-red {
     background-color: hsl(var(--status-red));
   }
@@ -107,6 +112,9 @@
   .bg-status-green {
     background-color: hsl(var(--status-green));
   }
+  .bg-status-yellow {
+    background-color: hsl(var(--status-yellow));
+  }
   .bg-status-red-bg {
     background-color: hsl(var(--status-red) / 0.15);
   }
@@ -115,5 +123,8 @@
   }
   .bg-status-green-bg {
     background-color: hsl(var(--status-green) / 0.15);
+  }
+  .bg-status-yellow-bg {
+    background-color: hsl(var(--status-yellow) / 0.15);
   }
 }
